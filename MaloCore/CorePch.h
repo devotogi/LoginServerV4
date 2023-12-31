@@ -1,0 +1,26 @@
+#pragma once
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <thread>
+
+#include <vector>
+#include <list>
+#include <stack>
+#include <queue>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>	
+#include <atomic>
+#include <random>
+#include <winsock2.h>
+#include <Windows.h>
+#include <sqlext.h>
+#include <sqltypes.h>
+#include <sql.h>
+#include <process.h>
+#include <WS2tcpip.h>
+#include <memory>
+#include <functional>
+#include "Types.h"
