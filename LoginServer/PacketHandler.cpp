@@ -340,7 +340,7 @@ void PacketHandler::HandlePacket_C2S_CHARACTERLIST(LoginSession* session, BYTE* 
 			bw2.Write(t.playerType);
 			bw2.Write(t.playerNameLen);
 			bw2.WriteWString(t.playerName, t.playerNameLen);
-			bw2.Write(level);
+			bw2.Write(t.playerLevel);
 		}
 
 		pktHeader->_type = PacketProtocol::S2C_CHARACTERLIST;
