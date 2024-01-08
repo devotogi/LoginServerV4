@@ -359,7 +359,7 @@ void PacketHandler::HandlePacket_C2S_DELETECHARACTER(LoginSession* session, BYTE
 	
 	int32 playerNameLen;
 	WCHAR playerName[256] = {};
-	int32 playerType;
+	int8 playerType;
 	int32 userSQ;
 
 	BufferReader br(packet);
