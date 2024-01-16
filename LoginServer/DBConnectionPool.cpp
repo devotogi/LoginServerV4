@@ -75,14 +75,14 @@ void DBConnectionPool::Init(const WCHAR* odbcName, const WCHAR* id, const WCHAR*
 
 void DBConnectionPool::Push(DBConnection* con)
 {
-	EnterCriticalSection(&_cs);
+	Lock lock (&_cs);
 	_dbConnections.push(con);
-	LeaveCriticalSection(&_cs);
 }
 
 DBConnection* DBConnectionPool::Pop()
 {
-	EnterCriticalSection(&_cs);
+	Lock lock(&_cs);
+
 	DBConnection* ret = nullptr;
 	if (_dbConnections.empty())
 	{
@@ -93,7 +93,6 @@ DBConnection* DBConnectionPool::Pop()
 		ret = _dbConnections.front();
 		_dbConnections.pop();
 	}
-	LeaveCriticalSection(&_cs);
 
 	return ret;
 }

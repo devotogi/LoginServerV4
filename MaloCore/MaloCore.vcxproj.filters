@@ -40,6 +40,9 @@
     <ClInclude Include="TCPConnector.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="Lock.h">
+      <Filter>base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorePch.cpp">
@@ -77,6 +80,9 @@
     </ClCompile>
     <ClCompile Include="TCPConnector.cpp">
       <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="Lock.cpp">
+      <Filter>base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

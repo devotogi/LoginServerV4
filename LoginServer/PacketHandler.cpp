@@ -33,6 +33,10 @@ void PacketHandler::HandlePacket(LoginSession* session, BYTE* packet, int32 pack
 	case PacketProtocol::C2S_GAMEPLAY:
 		HandlePacket_C2S_GAMEPLAY(session, dataPtr, dataSize);
 		break;
+
+	case PacketProtocol::C2S_SERVER_MOVE:
+		HandlePacket_C2S_SERVER_MOVE(session, dataPtr, dataSize);
+		break;
 	}
 }
 
@@ -467,15 +471,51 @@ void PacketHandler::HandlePacket_C2S_GAMEPLAY(LoginSession* session, BYTE* packe
 	if (port == 0)
 	{
 		// TODO 캐릭터 초기 접속
-		port = 30002;
+		port = 30004;
 	}
 	BYTE sendBuffer[1000] = {};
 	BufferWriter bw(sendBuffer);
 	PacketHeader* pktHeader = bw.WriteReserve<PacketHeader>();
-	bw.Write(port);
+	bw.Write((int16)port);
 	bw.Write(playerSQ);
 	pktHeader->_type = PacketProtocol::S2C_SERVERMOVE;
 	pktHeader->_pktSize = bw.GetWriterSize();
 	session->Send(sendBuffer, bw.GetWriterSize());
 	PlayerDBConnectionPool::GetInstance()->Push(con);
+}
+
+void PacketHandler::HandlePacket_C2S_SERVER_MOVE(LoginSession* session, BYTE* packet, int32 packetSize)
+{
+	DBConnection* playerCon = PlayerDBConnectionPool::GetInstance()->Pop();
+	Vector3 playerPos = { 0,0,0 };
+	// 로그아웃 시간 DB에 저장
+	{
+		SQLLEN len;
+		SQLPrepare(playerCon->GetHSTMT(), (SQLWCHAR*)L"update player.d_player set x = ?,y = ?,z = ?", SQL_NTS);
+		SQLBindParameter(playerCon->GetHSTMT(), 1, SQL_PARAM_INPUT, SQL_C_FLOAT, SQL_FLOAT, 0, 0, (SQLFLOAT*)&playerPos.x, 0, NULL);
+		SQLBindParameter(playerCon->GetHSTMT(), 2, SQL_PARAM_INPUT, SQL_C_FLOAT, SQL_FLOAT, 0, 0, (SQLFLOAT*)&playerPos.y, 0, NULL);
+		SQLBindParameter(playerCon->GetHSTMT(), 3, SQL_PARAM_INPUT, SQL_C_FLOAT, SQL_FLOAT, 0, 0, (SQLFLOAT*)&playerPos.z, 0, NULL);
+		SQLExecute(playerCon->GetHSTMT());
+		SQLFetch(playerCon->GetHSTMT());
+		SQLCloseCursor(playerCon->GetHSTMT());
+	}
+
+	int32 userSQ;
+	int32 playerSQ;
+	int16 serverPort;
+
+	BufferReader br(packet);
+	br.Read(userSQ);
+	br.Read(playerSQ);
+	br.Read(serverPort);
+
+	BYTE sendBuffer[1000] = {};
+	BufferWriter bw(sendBuffer);
+	PacketHeader* pktHeader = bw.WriteReserve<PacketHeader>();
+	bw.Write(serverPort);
+	bw.Write(playerSQ);
+	pktHeader->_type = PacketProtocol::S2C_SERVERMOVE;
+	pktHeader->_pktSize = bw.GetWriterSize();
+	session->Send(sendBuffer, bw.GetWriterSize());
+	PlayerDBConnectionPool::GetInstance()->Push(playerCon);
 }

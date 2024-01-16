@@ -3,7 +3,7 @@
 
 void Repository::FindUserByUserId(WCHAR* userId, const UserInfo& userInfo)
 {
-	EnterCriticalSection(&_cs);
+	Lock lock(&_cs);
 	WCHAR buffer[256] = {};
 	int32 userIdLen = wcslen(userId);
 	::memcpy(buffer, userId, sizeof(WCHAR) * userIdLen);
@@ -19,7 +19,6 @@ void Repository::FindUserByUserId(WCHAR* userId, const UserInfo& userInfo)
 	SQLExecute(_hStmt);
 	SQLFetch(_hStmt);
 	SQLCloseCursor(_hStmt);
-	LeaveCriticalSection(&_cs);
 }
 
 Repository::Repository()

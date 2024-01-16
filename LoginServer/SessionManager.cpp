@@ -6,30 +6,22 @@ SessionManager* SessionManager::_instance = nullptr;
 
 void SessionManager::AddSession(int32 sessionId, LoginSession* session)
 {
-	EnterCriticalSection(&_cs);
-
+	Lock lock(&_cs);
 	_sessions.insert({ sessionId,session });
-
-	LeaveCriticalSection(&_cs);
 }
 
 void SessionManager::PopSession(int32 sessionId)
 {
-	EnterCriticalSection(&_cs);
-
+	Lock lock(&_cs);
 	_sessions.erase(sessionId);
-
-	LeaveCriticalSection(&_cs);
 }
 
 void SessionManager::BroadCast(BYTE* dataPtr, int32 dataSize)
 {
-	EnterCriticalSection(&_cs);
+	Lock lock(&_cs);
 
 	for (auto& session : _sessions)
 		session.second->Send(dataPtr, dataSize);
-
-	LeaveCriticalSection(&_cs);
 }
 
 void SessionManager::GetSessionId(int32& sessionId)
@@ -40,15 +32,14 @@ void SessionManager::GetSessionId(int32& sessionId)
 
 LoginSession* SessionManager::GetSession(int32 sessionId)
 {
+	Lock lock(&_cs);
+
 	LoginSession* ret = nullptr;
 
-	EnterCriticalSection(&_cs);
 	auto it = _sessions.find(sessionId);
 
 	if (it != _sessions.end())
 		ret = it->second;
-
-	LeaveCriticalSection(&_cs);
 
 	return ret;
 }

@@ -11,5 +11,6 @@ private:
 	static void HandlePacket_C2S_CHARACTERLIST(LoginSession* session, BYTE* packet, int32 packetSize);
 	static void HandlePacket_C2S_DELETECHARACTER(LoginSession* session, BYTE* packet, int32 packetSize);
 	static void HandlePacket_C2S_GAMEPLAY(LoginSession* session, BYTE* packet, int32 packetSize);
+	static void HandlePacket_C2S_SERVER_MOVE(LoginSession* session, BYTE* packet, int32 packetSize);
 };
 
