@@ -6,6 +6,7 @@
 #include "pkt.h"
 #include "Repository.h"
 #include "MyDBConnection.h"
+#include "PacketHeader.h"
 void PacketHandler::HandlePacket(LoginSession* session, BYTE* packet, int32 packetSize)
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(packet);
@@ -499,6 +500,8 @@ void PacketHandler::HandlePacket_C2S_SERVER_MOVE(LoginSession* session, BYTE* pa
 		SQLFetch(playerCon->GetHSTMT());
 		SQLCloseCursor(playerCon->GetHSTMT());
 	}
+
+	// ServerMovePacket* dddddd = reinterpret_cast<ServerMovePacket*>(packet);
 
 	int32 userSQ;
 	int32 playerSQ;

@@ -172,6 +172,7 @@
     <ClInclude Include="LoginSession.h" />
     <ClInclude Include="MyDBConnection.h" />
     <ClInclude Include="PacketHandler.h" />
+    <ClInclude Include="PacketHeader.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="pkt.h" />
     <ClInclude Include="Repository.h" />
