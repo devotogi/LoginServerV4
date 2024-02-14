@@ -6,19 +6,19 @@ SessionManager* SessionManager::_instance = nullptr;
 
 void SessionManager::AddSession(int32 sessionId, LoginSession* session)
 {
-	Lock lock(&_cs);
+	LockGuard lock(&_cs);
 	_sessions.insert({ sessionId,session });
 }
 
 void SessionManager::PopSession(int32 sessionId)
 {
-	Lock lock(&_cs);
+	LockGuard lock(&_cs);
 	_sessions.erase(sessionId);
 }
 
 void SessionManager::BroadCast(BYTE* dataPtr, int32 dataSize)
 {
-	Lock lock(&_cs);
+	LockGuard lock(&_cs);
 
 	for (auto& session : _sessions)
 		session.second->Send(dataPtr, dataSize);
@@ -26,13 +26,13 @@ void SessionManager::BroadCast(BYTE* dataPtr, int32 dataSize)
 
 void SessionManager::GetSessionId(int32& sessionId)
 {
-	_sessionId++;
+	InterlockedIncrement(&_sessionId);
 	sessionId = _sessionId;
 }
 
 LoginSession* SessionManager::GetSession(int32 sessionId)
 {
-	Lock lock(&_cs);
+	LockGuard lock(&_cs);
 
 	LoginSession* ret = nullptr;
 

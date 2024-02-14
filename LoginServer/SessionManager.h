@@ -5,18 +5,16 @@ class SessionManager
 private:
 	static SessionManager* _instance;
 	std::map<int32, LoginSession*> _sessions;
-	CRITICAL_SECTION	   _cs;
-	uint32				   _sessionId = 0;
+	SpinLock	   _cs;
+	volatile uint32			_sessionId = 0;
 
 public:
 	SessionManager()
 	{
-		InitializeCriticalSection(&_cs);
 	}
 
 	~SessionManager()
 	{
-		DeleteCriticalSection(&_cs);
 	}
 
 public:

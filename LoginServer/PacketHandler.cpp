@@ -4,9 +4,9 @@
 #include "LoginSession.h"
 #include "BufferReader.h"
 #include "pkt.h"
-#include "Repository.h"
 #include "MyDBConnection.h"
 #include "PacketHeader.h"
+#include "JobQueue.h"
 void PacketHandler::HandlePacket(LoginSession* session, BYTE* packet, int32 packetSize)
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(packet);
@@ -47,77 +47,77 @@ void PacketHandler::HandlePacket_C2S_LOGIN(LoginSession* session, BYTE* packet, 
 	int32 userPwLen;
 
 	BufferReader br(packet);
-	WCHAR userId[1000] = { 0 };
-	WCHAR userPw[1000] = { 0 };
+	LoginObj loginObj;
+	loginObj.sessionId = session->GetSessionID();
+	br.Read(loginObj.userIdLen);
+	br.ReadWString(loginObj.userId, loginObj.userIdLen);
+	br.Read(loginObj.userPwLen);
+	br.ReadWString(loginObj.userPw, loginObj.userPwLen);
+	LoginJobQueue::GetInstance()->Push(loginObj);
 
-	br.Read(userIdLen);
-	br.ReadWString(userId, userIdLen);
-	br.Read(userPwLen);
-	br.ReadWString(userPw, userPwLen);
+	//// Login 처리
+	//UserInfo userInfo;
+	//SQLINTEGER  SQ;
+	//DBConnection* con = AccountDBConnectionPool::GetInstance()->Pop();
+	//{
+	//	WCHAR buffer[256] = {};
+	//	int32 userIdLen = wcslen(userId);
+	//	::memcpy(buffer, userId, sizeof(WCHAR) * userIdLen);
 
-	// Login 처리
-	UserInfo userInfo;
-	SQLINTEGER  SQ;
-	DBConnection* con = AccountDBConnectionPool::GetInstance()->Pop();
-	{
-		WCHAR buffer[256] = {};
-		int32 userIdLen = wcslen(userId);
-		::memcpy(buffer, userId, sizeof(WCHAR) * userIdLen);
+	//	SQLPrepare(con->GetHSTMT(), (SQLWCHAR*)L"select top 1 USER_ID , USER_PW, SQ from requies.d_user where USER_ID = ? ;", SQL_NTS);
+	//	SQLBindParameter(con->GetHSTMT(), 1, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_VARCHAR, sizeof(buffer), 0, (SQLWCHAR*)buffer, sizeof(buffer), NULL);
 
-		SQLPrepare(con->GetHSTMT(), (SQLWCHAR*)L"select top 1 USER_ID , USER_PW, SQ from requies.d_user where USER_ID = ? ;", SQL_NTS);
-		SQLBindParameter(con->GetHSTMT(), 1, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_VARCHAR, sizeof(buffer), 0, (SQLWCHAR*)buffer, sizeof(buffer), NULL);
+	//	WCHAR userId2;
+	//	SQLLEN len = 0;
+	//	SQLBindCol(con->GetHSTMT(), 1, SQL_WCHAR, (SQLWCHAR*)&userInfo.userId, sizeof(userInfo.userId), &len);
+	//	SQLBindCol(con->GetHSTMT(), 2, SQL_WCHAR, (SQLWCHAR*)&userInfo.userPw, sizeof(userInfo.userPw), &len);
+	//	SQLBindCol(con->GetHSTMT(), 3, SQL_INTEGER, &SQ, sizeof(SQ), &len);
 
-		WCHAR userId2;
-		SQLLEN len = 0;
-		SQLBindCol(con->GetHSTMT(), 1, SQL_WCHAR, (SQLWCHAR*)&userInfo.userId, sizeof(userInfo.userId), &len);
-		SQLBindCol(con->GetHSTMT(), 2, SQL_WCHAR, (SQLWCHAR*)&userInfo.userPw, sizeof(userInfo.userPw), &len);
-		SQLBindCol(con->GetHSTMT(), 3, SQL_INTEGER, &SQ, sizeof(SQ), &len);
+	//	SQLExecute(con->GetHSTMT());
+	//	SQLFetch(con->GetHSTMT());
+	//	SQLCloseCursor(con->GetHSTMT());
+	//}
 
-		SQLExecute(con->GetHSTMT());
-		SQLFetch(con->GetHSTMT());
-		SQLCloseCursor(con->GetHSTMT());
-	}
+	//int32 userIdSize = wcslen(userInfo.userId);
+	//int32 compare = wcscmp(userPw, userInfo.userPw);
 
-	int32 userIdSize = wcslen(userInfo.userId);
-	int32 compare = wcscmp(userPw, userInfo.userPw);
+	//BYTE sendBuffer[1000];
+	//BufferWriter bw(sendBuffer);
+	//PacketHeader* pktHeader = bw.WriteReserve<PacketHeader>();
+	//int32 canLogin = 9999;
 
-	BYTE sendBuffer[1000];
-	BufferWriter bw(sendBuffer);
-	PacketHeader* pktHeader = bw.WriteReserve<PacketHeader>();
-	int32 canLogin = 9999;
+	//if (compare != 0)
+	//{
+	//	// 로그인 실패
+	//	canLogin = 10000;
+	//}
 
-	if (compare != 0)
-	{
-		// 로그인 실패
-		canLogin = 10000;
-	}
+	//// 로그인 성공
+	//bw.Write(canLogin);
+	//// 유저 SQ
+	//bw.Write((int32)SQ);
+	//bw.Write(ServerPort::FIELD_SERVER);
 
-	// 로그인 성공
-	bw.Write(canLogin);
-	// 유저 SQ
-	bw.Write((int32)SQ);
-	bw.Write(ServerPort::FIELD_SERVER);
+	//pktHeader->_type = PacketProtocol::S2C_LOGIN;
+	//pktHeader->_pktSize = bw.GetWriterSize();
 
-	pktHeader->_type = PacketProtocol::S2C_LOGIN;
-	pktHeader->_pktSize = bw.GetWriterSize();
+	//session->Send(sendBuffer, bw.GetWriterSize());
 
-	session->Send(sendBuffer, bw.GetWriterSize());
+	///*
+	//	로그인 로그 남기기
+	//*/
+	//{
+	//	WCHAR buffer[256] = {};
+	//	int32 userIdLen = wcslen(userId);
+	//	::memcpy(buffer, userId, sizeof(WCHAR) * userIdLen);
+	//	SQLPrepare(con->GetHSTMT(), (SQLWCHAR*)L"update requies.d_user set LOGIN_DT = GETDATE() where USER_ID = ?;", SQL_NTS);
+	//	SQLBindParameter(con->GetHSTMT(), 1, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_VARCHAR, sizeof(buffer), 0, (SQLWCHAR*)buffer, sizeof(buffer), NULL);
+	//	SQLExecute(con->GetHSTMT());
+	//	SQLFetch(con->GetHSTMT());
+	//	SQLCloseCursor(con->GetHSTMT());
+	//}
 
-	/*
-		로그인 로그 남기기
-	*/
-	{
-		WCHAR buffer[256] = {};
-		int32 userIdLen = wcslen(userId);
-		::memcpy(buffer, userId, sizeof(WCHAR) * userIdLen);
-		SQLPrepare(con->GetHSTMT(), (SQLWCHAR*)L"update requies.d_user set LOGIN_DT = GETDATE() where USER_ID = ?;", SQL_NTS);
-		SQLBindParameter(con->GetHSTMT(), 1, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_VARCHAR, sizeof(buffer), 0, (SQLWCHAR*)buffer, sizeof(buffer), NULL);
-		SQLExecute(con->GetHSTMT());
-		SQLFetch(con->GetHSTMT());
-		SQLCloseCursor(con->GetHSTMT());
-	}
-
-	AccountDBConnectionPool::GetInstance()->Push(con);
+	//AccountDBConnectionPool::GetInstance()->Push(con);
 }
 
 void PacketHandler::HandlePacket_C2S_CREATECHARACTER(LoginSession* session, BYTE* packet, int32 packetSize)

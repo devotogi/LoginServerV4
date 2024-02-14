@@ -10,7 +10,35 @@ Session::~Session()
 
 void Session::Send(BYTE* buffer, int32 bufferSize)
 {
-	::send(_socket, (char*)buffer, bufferSize, 0);
+	// ::send(_socket, (char*)buffer, bufferSize, 0);
+
+	WSABUF WSAbuffer;
+	DWORD sendBytes;
+	DWORD flag = 0;
+
+	WSAbuffer.buf = reinterpret_cast<CHAR*>(buffer);
+	WSAbuffer.len = bufferSize;
+
+	//WSABUF wsaBuf;
+	//wsaBuf.buf = reinterpret_cast<char*>(_recvBuffer.GetWritePos());
+	//wsaBuf.len = _recvBuffer.GetFreeSize();
+
+
+	// send 여기 처리하라는 뜻              // 비동기 처리 할 곳이 없음
+	if (WSASend(_socket, &WSAbuffer, 1, &sendBytes, flag, NULL, NULL) == SOCKET_ERROR)
+	{
+		int errorCode = WSAGetLastError();
+
+		if (errorCode == WSAEWOULDBLOCK) 
+		{
+			wprintf_s(L"WSA Send Block Error\n");
+			closesocket(_socket);
+		}
+		else
+		{
+			wprintf_s(L"errorCode %d", errorCode);
+		}
+	}
 }
 
 void Session::Recv(int32 numOfBytes)

@@ -48,3 +48,13 @@ enum PacketProtocol : __int16
 	S2C_SERVERMOVE,
 	C2S_SERVER_MOVE
 };
+
+struct LoginObj 
+{
+public:
+	int32 sessionId;
+	int32 userIdLen;
+	WCHAR userId[100] = {0};
+	int32 userPwLen;
+	WCHAR userPw[100] = {0};
+};

@@ -37,8 +37,6 @@ SQLHSTMT& DBConnection::GetHSTMT()
 
 DBConnectionPool::DBConnectionPool()
 {
-	InitializeCriticalSection(&_cs);
-
 	if (SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &_hEnv) != SQL_SUCCESS)
 		printf("ERROR\n");
 
@@ -48,7 +46,6 @@ DBConnectionPool::DBConnectionPool()
 
 DBConnectionPool::~DBConnectionPool()
 {
-	DeleteCriticalSection(&_cs);
 	SQLFreeHandle(SQL_HANDLE_ENV, _hEnv);
 
 	while (_dbConnections.empty() == false)
@@ -75,13 +72,13 @@ void DBConnectionPool::Init(const WCHAR* odbcName, const WCHAR* id, const WCHAR*
 
 void DBConnectionPool::Push(DBConnection* con)
 {
-	Lock lock (&_cs);
+	LockGuard lock (&_cs);
 	_dbConnections.push(con);
 }
 
 DBConnection* DBConnectionPool::Pop()
 {
-	Lock lock(&_cs);
+	LockGuard lock(&_cs);
 
 	DBConnection* ret = nullptr;
 	if (_dbConnections.empty())

@@ -23,7 +23,7 @@ protected:
 	SQLWCHAR					_ODBC_ID[256] = {};
 	SQLWCHAR					_ODBC_PW[256] = {};
 	std::queue<DBConnection*>	_dbConnections;
-	CRITICAL_SECTION			_cs;
+	CriticalSectionObject		_cs;
 
 public:
 	DBConnectionPool();
